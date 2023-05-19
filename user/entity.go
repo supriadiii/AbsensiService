@@ -10,5 +10,6 @@ type User struct {
 	Kelas    string
 	Prodi    string
 	NoHp     string
+	PT       string
 	Role     string
 }

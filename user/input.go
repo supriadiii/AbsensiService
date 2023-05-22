@@ -22,7 +22,7 @@ type Login struct {
 func (input *RegisterUserInput) Validate() error {
 	// Lakukan validasi sesuai kebutuhan
 	if input.Name == "" {
-		return errors.New("Name is required")
+		return errors.New("Name is required ff")
 	}
 	if input.Nim <= 0 {
 		return errors.New("Nim is required")

@@ -25,7 +25,7 @@ jobs:
         with:
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/api-scantime:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/api-scantime
 
   deployment:
     needs: build

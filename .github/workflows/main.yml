@@ -16,31 +16,31 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
       - name: Build and Push
         uses: docker/build-push-action@v4
-        with: 
-          file : ./Dockerfile
+        with:
+          file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/tambaki:latest
-  
+          tags: ${{ secrets.DOCKER_USERNAME }}/api-scantime:latest
+
   deployment:
     needs: build
     environment: staging
     runs-on: ubuntu-latest
     steps:
-    - name: Deploy to VPS
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER }}
-        username: ${{ secrets.SERVER_USERNAME }}
-        password: ${{ secrets.SERVER_PASSWORD }}
-        port: ${{ secrets.SERVER_PORT }}
-        script: |
-          whoami
-          docker stop tambaki || true && docker rm tambaki || true
-          docker pull ${{ vars.IMAGE_NAME }}
-          docker run -d -p 8081:8080 --name ${{ vars.CONTAINER_NAME }} ${{ vars.IMAGE_NAME }} 
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            whoami
+            docker stop api-scantime|| true && docker rm api-scantime || true
+            docker pull ${{ vars.IMAGE_NAME }}
+            docker run -d -p 8081:8080 --name ${{ vars.CONTAINER_NAME }} ${{ vars.IMAGE_NAME }}

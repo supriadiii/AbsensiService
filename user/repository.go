@@ -3,7 +3,8 @@ package user
 import "gorm.io/gorm"
 
 type Repository interface {
-	Save(user User) (User, error)
+	Save(User User) (User, error)
+	GetAllUsers(ID uint) ([]User, error)
 }
 
 type repository struct {
@@ -14,10 +15,19 @@ func NewRepository(db *gorm.DB) *repository {
 	return &repository{db}
 }
 
-func (r *repository) Save(user User) (User, error) {
-	err := r.db.Create(&user).Error
+func (r *repository) Save(User User) (User, error) {
+	err := r.db.Create(&User).Error
 	if err != nil {
-		return user, err
+		return User, err
 	}
-	return user, nil
+	return User, nil
+}
+
+func (r *repository) GetAllUsers(ID uint) ([]User, error) {
+	var Users []User
+	err := r.db.Limit(10).Where("id>= ?", ID).Find(&Users).Error
+	if err != nil {
+		return nil, err
+	}
+	return Users, nil
 }

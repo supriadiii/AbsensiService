@@ -14,6 +14,7 @@ import (
 
 type Service interface {
 	RegisterUser(input RegisterUserInput) (User, error)
+	GetAllUsers(input UserIDInput) ([]User, error)
 }
 
 type service struct {
@@ -24,6 +25,7 @@ func NewService(repository Repository) *service {
 	return &service{repository}
 
 }
+
 func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 	user := User{}
 	user.Name = input.Name
@@ -40,9 +42,7 @@ func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 
 	// Validasi nim di API
 	apiURL := fmt.Sprintf("https://api-frontend.kemdikbud.go.id/hit_mhs/%v", input.Nim)
-	log.Printf("==============", apiURL)
 	resp, err := http.Get(apiURL)
-	log.Printf("==============", resp)
 	if err != nil {
 		log.Println("Error calling API:", err)
 		return user, err
@@ -70,7 +70,6 @@ func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 
 	var apiResponse ApiResponse
 
-	log.Printf("=============-sdfrsdfgdrrf---------=", apiResponse.Mahasiswa)
 	err = json.Unmarshal(body, &apiResponse)
 	if err != nil {
 		return user, err
@@ -92,4 +91,12 @@ func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 	}
 	return newUser, nil
 
+}
+
+func (s *service) GetAllUsers(input UserIDInput) ([]User, error) {
+	Ships, err := s.repository.GetAllUsers(input.ID)
+	if err != nil {
+		return nil, err
+	}
+	return Ships, nil
 }

@@ -30,3 +30,7 @@ func (input *RegisterUserInput) Validate() error {
 	// ... tambahkan validasi lainnya
 	return nil
 }
+
+type UserIDInput struct {
+	ID uint `json:"id" binding:"required"`
+}

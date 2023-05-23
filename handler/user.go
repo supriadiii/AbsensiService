@@ -35,3 +35,26 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, user)
 }
+
+func (h *userHandler) GetAllUsers(c *gin.Context) {
+	// pagination := helper.GeneratePaginationFromRequest(c)
+	var input user.UserIDInput
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.ValidationErrorFormatter(err)
+		errorMessage := gin.H{"errors": errors}
+		response := helper.ResponseFormatter("Failed to get User detail ", http.StatusUnprocessableEntity, "errors", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+	Users, err := h.userService.GetAllUsers(input)
+	if err != nil {
+		errors := helper.ValidationErrorFormatter(err)
+		errorMassage := gin.H{"error": errors}
+		respone := helper.ResponseFormatter("Failed to Get All Ship", http.StatusUnprocessableEntity, "error", errorMassage)
+		c.JSON(http.StatusUnprocessableEntity, respone)
+	}
+	formatter := user.FormatUsers(Users)
+	respone := helper.ResponseFormatter("List Of User", http.StatusOK, "succes", formatter)
+	c.JSON(http.StatusOK, respone)
+}

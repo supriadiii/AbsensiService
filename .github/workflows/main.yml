@@ -41,7 +41,6 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script: |
             whoami
-            console ${{ vars.CONTAINER_NAME }}
             docker stop backendabsensi-api-scantime-1 || true && docker rm backendabsensi-api-scantime-1 || true
             docker pull ${{ vars.IMAGE_NAME }}
             docker run -d -p 8081:8080 --name backendabsensi-api-scantime-1 hello/api-scantime

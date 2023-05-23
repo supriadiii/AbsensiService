@@ -34,3 +34,7 @@ func (input *RegisterUserInput) Validate() error {
 type UserIDInput struct {
 	ID uint `json:"id" binding:"required"`
 }
+
+type Userkls struct {
+	id uint
+}

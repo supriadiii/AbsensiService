@@ -15,6 +15,8 @@ import (
 type Service interface {
 	RegisterUser(input RegisterUserInput) (User, error)
 	GetAllUsers(input UserIDInput) ([]User, error)
+	Login(input LoginInput, token string) (User, error)
+	FindByToken(input string) (User, error)
 }
 
 type service struct {
@@ -99,4 +101,40 @@ func (s *service) GetAllUsers(input UserIDInput) ([]User, error) {
 		return nil, err
 	}
 	return Ships, nil
+}
+
+func (s *service) FindByToken(input string) (User, error) {
+	user, err := s.repository.FindByToken(input)
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+}
+
+// LOGIN
+func (s *service) Login(input LoginInput, token string) (User, error) {
+	email := input.Nim
+	password := input.Password
+
+	user, err := s.repository.FindByNim(email)
+	if err != nil {
+		return user, err
+	}
+
+	if user.ID == 0 {
+		return user, errors.New("User not found.")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+
+	if err != nil {
+		return user, err
+	}
+
+	user, err = s.FindByToken(token)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
 }

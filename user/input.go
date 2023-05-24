@@ -34,3 +34,10 @@ func (input *RegisterUserInput) Validate() error {
 type UserIDInput struct {
 	ID uint `json:"id" binding:"required"`
 }
+
+// LOGIN
+type LoginInput struct {
+	Nim      string `json:"nim" binding:"required,nim"`
+	Password string `json:"password" binding:"required,min=8,max=120"`
+	Remember bool   `json:"remember"`
+}

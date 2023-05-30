@@ -75,6 +75,14 @@ func main() {
 	userHandler := handler.NewUserHandler(userService)
 
 	router := gin.Default()
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
+		c.Next()
+	})
+
 	api := router.Group("/api/v1")
 	api.GET("/hallo", func(c *gin.Context) {
 		c.String(200, "Hello, World!")

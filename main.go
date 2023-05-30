@@ -79,7 +79,7 @@ func main() {
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
-	router.GET("/hallo", func(c *gin.Context) {
+	api.GET("/hallo", func(c *gin.Context) {
 		c.String(200, "Hello, World!")
 	})
 

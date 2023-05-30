@@ -76,6 +76,10 @@ func main() {
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
+	api.GET("/hallo", func(c *gin.Context) {
+		c.String(200, "Hello, World!")
+	})
+
 	//ENPOINT
 	api.POST("/user/register", userHandler.RegisterUser)
 	api.POST("/users", userHandler.GetAllUsers)

@@ -34,9 +34,9 @@ func (r *repository) GetAllUsers(ID uint) ([]User, error) {
 	return Users, nil
 }
 
-func (r *repository) FindByNim(nim string) (User, error) {
+func (r *repository) FindByNim(Nim string) (User, error) {
 	var user User
-	err := r.db.Where("nim = ?", nim).Find(&user).Error
+	err := r.db.Where("nim = ?", Nim).Find(&user).Error
 	if err != nil {
 		return user, err
 	}

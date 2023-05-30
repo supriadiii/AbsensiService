@@ -1,0 +1,2 @@
+[24/May/2023:05:37:28 +0000] 404 - GET http 127.0.0.1 "/api/v1/hello" [Client 172.20.0.1] [Length 122] [Gzip 1.35] "PostmanRuntime/7.32.2" "-"
+[24/May/2023:05:40:43 +0000] 404 - POST http 127.0.0.1 "/api/v1/users" [Client 172.20.0.1] [Length 122] [Gzip 1.35] "PostmanRuntime/7.32.2" "-"

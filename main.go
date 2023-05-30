@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"project_absensi/handler"
+	"project_absensi/handler/auth"
 	"project_absensi/user"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +32,7 @@ func main() {
 
 	fmt.Println("Connecting to Meilisearch")
 	client := meilisearch.NewClient(meilisearch.ClientConfig{
-		Host:   "http://127.0.0.1:7700",
+		Host:   "http://103.52.115.184:7700",
 		APIKey: os.Getenv("MEILI_MASTER_KEY"),
 	})
 
@@ -44,7 +45,8 @@ func main() {
 	fmt.Println("Connecting to the database...")
 	fmt.Println(client, redisClient)
 
-	dsn := dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local&net_write_timeout=6000"
+	dsn := dbUser + ":" + dbPass + "@tcp(" + dbHost + ":" + dbPort + ")/" + dbName + "?charset=utf8mb4&parseTime=True&loc=Local&net_write_timeout=6000&multiStatements=true"
+
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 		NamingStrategy: schema.NamingStrategy{
@@ -70,14 +72,20 @@ func main() {
 
 	//SERVICE
 	userService := user.NewService(userRepository)
+	authService := auth.NewService()
 
 	//Handler
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := handler.NewUserHandler(userService, authService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
+	router.GET("/hallo", func(c *gin.Context) {
+		c.String(200, "Hello, World!")
+	})
+
 	//ENPOINT
 	api.POST("/user/register", userHandler.RegisterUser)
+	api.POST("/user/login", userHandler.LoginUser)
 	api.POST("/users", userHandler.GetAllUsers)
 
 	err = router.Run(":8080")

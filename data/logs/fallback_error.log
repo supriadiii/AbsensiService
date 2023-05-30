@@ -1,0 +1,2 @@
+2023/05/24 05:37:28 [error] 21729#21729: *1 open() "/var/www/html/api/v1/hello" failed (2: No such file or directory), client: 172.20.0.1, server: localhost-nginx-proxy-manager, request: "GET /api/v1/hello HTTP/1.1", host: "127.0.0.1"
+2023/05/24 05:40:43 [error] 21729#21729: *2 open() "/var/www/html/api/v1/users" failed (2: No such file or directory), client: 172.20.0.1, server: localhost-nginx-proxy-manager, request: "POST /api/v1/users HTTP/1.1", host: "127.0.0.1"

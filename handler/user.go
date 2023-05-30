@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"project_absensi/handler/auth"
 	"project_absensi/helper"
 	"project_absensi/user"
 
@@ -10,10 +11,11 @@ import (
 
 type userHandler struct {
 	userService user.Service
+	authService auth.Service
 }
 
-func NewUserHandler(userService user.Service) *userHandler {
-	return &userHandler{userService}
+func NewUserHandler(userService user.Service, authService auth.Service) *userHandler {
+	return &userHandler{userService, authService}
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
@@ -57,4 +59,47 @@ func (h *userHandler) GetAllUsers(c *gin.Context) {
 	formatter := user.FormatUsers(Users)
 	respone := helper.ResponseFormatter("List Of User", http.StatusOK, "succes", formatter)
 	c.JSON(http.StatusOK, respone)
+}
+
+// login
+func (h *userHandler) LoginUser(c *gin.Context) {
+	token := c.GetHeader("Authorization-Agent")
+	var input user.LoginInput
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.ValidationErrorFormatter(err)
+
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.ResponseFormatter("Failed to login", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	user1, err := h.userService.Login(input, token)
+	if err != nil {
+		response := helper.ResponseFormatter("Failed to login", http.StatusBadRequest, "error", gin.H{"errors": [1]string{err.Error()}})
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	token, err = h.authService.GenerateToken(user1.ID)
+	if err != nil {
+		response := helper.ResponseFormatter("Failed to login", http.StatusBadRequest, "error", gin.H{"errors": [1]string{err.Error()}})
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	formatter := user.FormatUser(user1, token)
+
+	response := helper.ResponseFormatter("Login success", http.StatusOK, "success", formatter)
+
+	if err != nil {
+		response := helper.ResponseFormatter("Failed to login", http.StatusBadRequest, "error", err.Error())
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
 }

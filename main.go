@@ -91,6 +91,7 @@ func main() {
 	//ENPOINT
 	api.POST("/user/register", userHandler.RegisterUser)
 	api.POST("/users", userHandler.GetAllUsers)
+	api.POST("/user/login", userHandler.Login)
 
 	err = router.Run(":8080")
 	if err != nil {

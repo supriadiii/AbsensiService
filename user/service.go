@@ -15,6 +15,7 @@ import (
 type Service interface {
 	RegisterUser(input RegisterUserInput) (User, error)
 	GetAllUsers(input UserIDInput) ([]User, error)
+	Login(input Login) (User, error)
 }
 
 type service struct {
@@ -99,4 +100,20 @@ func (s *service) GetAllUsers(input UserIDInput) ([]User, error) {
 		return nil, err
 	}
 	return Ships, nil
+}
+
+func (s *service) Login(input Login) (User, error) {
+	// mencari user berdasarkan Nim
+	user, err := s.repository.FindByNim(input.Nim)
+	if err != nil {
+		return user, err
+	}
+
+	// membandingkan password user dengan password input
+	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
+		return user, err
+	}
+
+	// jika semuanya baik-baik saja, kembalikan user
+	return user, nil
 }

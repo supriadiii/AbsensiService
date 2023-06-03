@@ -58,3 +58,28 @@ func (h *userHandler) GetAllUsers(c *gin.Context) {
 	respone := helper.ResponseFormatter("List Of User", http.StatusOK, "succes", formatter)
 	c.JSON(http.StatusOK, respone)
 }
+
+func (h *userHandler) Login(c *gin.Context) {
+	var input user.Login
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.ValidationErrorFormatter(err)
+		errorMessage := gin.H{"errors": errors}
+		response := helper.ResponseFormatter("Login failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	loggedInUser, err := h.userService.Login(input)
+	if err != nil {
+		errors := helper.ValidationErrorFormatter(err)
+		errorMessage := gin.H{"errors": errors}
+		response := helper.ResponseFormatter("Login failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	formatter := user.FormatUser(loggedInUser, "token") // Anda perlu menghasilkan token JWT di sini
+	response := helper.ResponseFormatter("Login success", http.StatusOK, "success", formatter)
+	c.JSON(http.StatusOK, response)
+}

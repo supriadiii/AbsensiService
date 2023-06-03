@@ -5,6 +5,7 @@ import "gorm.io/gorm"
 type Repository interface {
 	Save(User User) (User, error)
 	GetAllUsers(ID uint) ([]User, error)
+	FindByNim(nim string) (User, error)
 }
 
 type repository struct {
@@ -30,4 +31,12 @@ func (r *repository) GetAllUsers(ID uint) ([]User, error) {
 		return nil, err
 	}
 	return Users, nil
+}
+
+func (r *repository) FindByNim(nim string) (User, error) {
+	var user User
+	if err := r.db.Where("nim = ?", nim).Find(&user).Error; err != nil {
+		return user, err
+	}
+	return user, nil
 }

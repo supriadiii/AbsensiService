@@ -1,7 +1,6 @@
 version: '3'
 
 services:
-  #  start MariaDB, and ensure that data is stored to a mounted volume
   mariadb:
     image: 'mariadb:10.6'
     ports:
@@ -12,7 +11,6 @@ services:
       MYSQL_DATABASE: AbsensiService
       MYSQL_USER: mariadb
       MYSQL_PASSWORD: password
-
     volumes:
       - ./db-data/mariadb:/docker-entrypoint-initdb.d
       - ./my.cnf:/etc/mysql/conf.d/my.cnf
@@ -22,8 +20,6 @@ services:
     restart: always
     environment:
       PMA_HOST: mariadb
-      # PMA_USER: root
-      # PMA_PASSWORD: password
     ports:
       - "8090:80"
 
@@ -40,8 +36,6 @@ services:
       - MEILI_DB_PATH=${MEILI_DB_PATH:-/data.ms}
     ports:
       - ${MEILI_PORT:-7700}:7700
-    # networks:
-    #   - meilisearch
     volumes:
       - ./data.ms:/data.ms
     restart: unless-stopped
@@ -52,3 +46,10 @@ services:
       - "6379:6379"
     restart: always
 
+  absensi:
+    build:
+      context: ./absen
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    restart: always

@@ -52,8 +52,3 @@ services:
       - "6379:6379"
     restart: always
 
-  api-scantime:
-    image: hello/api-scantime
-    ports:
-      - "8082:8080"
-    restart: always

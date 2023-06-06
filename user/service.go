@@ -18,6 +18,7 @@ type Service interface {
 	GetAllUsers(input UserIDInput) ([]User, error)
 	Login(input Login) (User, error)
 	IsNimAvailable(input CheckNimInput) (bool, error)
+	GetUserByID(ID uint) (User, error)
 }
 
 type service struct {
@@ -167,4 +168,15 @@ func (s *service) IsNimAvailable(input CheckNimInput) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+func (s *service) GetUserByID(ID uint) (User, error) {
+	user, err := s.repository.FindByID(ID)
+	if err != nil {
+		return user, err
+	}
+	if user.ID == 0 {
+		return user, errors.New("No user found on with that ID")
+	}
+	return user, nil
 }

@@ -6,6 +6,7 @@ type Repository interface {
 	Save(User User) (User, error)
 	GetAllUsers(ID uint) ([]User, error)
 	FindByNim(nim int) (User, error)
+	FindByID(ID uint) (User, error)
 	// SaveToken(user User, token string) error
 	// GetUserByToken(token string) (User, error)
 }
@@ -43,6 +44,11 @@ func (r *repository) FindByNim(nim int) (User, error) {
 	return user, nil
 }
 
-// func (r* repository)SaveToken(user User, token string) error {
-
-// }
+func (r *repository) FindByID(ID uint) (User, error) {
+	var user User
+	err := r.db.Where("id = ?", ID).Find(&user).Error
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+}

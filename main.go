@@ -3,13 +3,17 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"project_absensi/auth"
 	"project_absensi/handler"
+	"project_absensi/helper"
 	"project_absensi/user"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/joho/godotenv"
 	"github.com/meilisearch/meilisearch-go"
 	"gorm.io/driver/mysql"
@@ -72,17 +76,7 @@ func main() {
 	//SERVICE
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
-	token, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyfQ.lP_ozIMd-XduUJCRlbd3qPL-YIu3BXHrTdvm0vnAxto")
-	if err != nil {
-		fmt.Printf("error")
-		fmt.Printf("error")
-		fmt.Printf("error")
-	}
-	if token.Valid {
-		fmt.Printf("valid token")
-		fmt.Printf("valid token")
-		fmt.Printf("valid token")
-	}
+
 	//Handler
 	userHandler := handler.NewUserHandler(userService, authService)
 
@@ -102,7 +96,7 @@ func main() {
 
 	//ENPOINT
 	api.POST("/user/register", userHandler.RegisterUser)
-	api.POST("/users", userHandler.GetAllUsers)
+	api.POST("/users", autMiddleware(authService, userService), userHandler.GetAllUsers)
 	api.POST("/user/login", userHandler.Login)
 	api.POST("/user/nim", userHandler.CheckNimAvailability)
 
@@ -112,4 +106,42 @@ func main() {
 	}
 
 	fmt.Println("Server is running on port 8080")
+}
+
+func autMiddleware(authService auth.Service, userService user.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		authHandler := c.GetHeader(("Authorization"))
+		if !strings.Contains(authHandler, "Baerer") {
+			respone := helper.ResponseFormatter("Unauthorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, respone)
+			return
+		}
+
+		tokenString := ""
+		arrayToken := strings.Split(authHandler, " ")
+		if len(arrayToken) == 2 {
+			tokenString = arrayToken[1]
+		}
+		token, err := authService.ValidateToken(tokenString)
+		if err != nil {
+			respone := helper.ResponseFormatter("Unauthorized1", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, respone)
+			return
+		}
+		claim, ok := token.Claims.(jwt.MapClaims)
+		if !ok || !token.Valid {
+			respone := helper.ResponseFormatter("Unauthorized2", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, respone)
+			return
+		}
+		userID := uint(claim["user_id"].(float64))
+		user, err := userService.GetUserByID(userID)
+		if err != nil {
+			respone := helper.ResponseFormatter("Unauthorized3", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, respone)
+			return
+		}
+		c.Set("CurrentUser", user)
+	}
 }

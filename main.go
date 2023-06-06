@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"project_absensi/auth"
 	"project_absensi/handler"
 	"project_absensi/user"
 
@@ -70,9 +71,20 @@ func main() {
 
 	//SERVICE
 	userService := user.NewService(userRepository)
-
+	authService := auth.NewService()
+	token, err := authService.ValidateToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyfQ.lP_ozIMd-XduUJCRlbd3qPL-YIu3BXHrTdvm0vnAxto")
+	if err != nil {
+		fmt.Printf("error")
+		fmt.Printf("error")
+		fmt.Printf("error")
+	}
+	if token.Valid {
+		fmt.Printf("valid token")
+		fmt.Printf("valid token")
+		fmt.Printf("valid token")
+	}
 	//Handler
-	userHandler := handler.NewUserHandler(userService)
+	userHandler := handler.NewUserHandler(userService, authService)
 
 	router := gin.Default()
 	router.Use(func(c *gin.Context) {
@@ -92,6 +104,7 @@ func main() {
 	api.POST("/user/register", userHandler.RegisterUser)
 	api.POST("/users", userHandler.GetAllUsers)
 	api.POST("/user/login", userHandler.Login)
+	api.POST("/user/nim", userHandler.CheckNimAvailability)
 
 	err = router.Run(":8080")
 	if err != nil {

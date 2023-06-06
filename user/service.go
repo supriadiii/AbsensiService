@@ -10,12 +10,14 @@ import (
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type Service interface {
 	RegisterUser(input RegisterUserInput) (User, error)
 	GetAllUsers(input UserIDInput) ([]User, error)
 	Login(input Login) (User, error)
+	IsNimAvailable(input CheckNimInput) (bool, error)
 }
 
 type service struct {
@@ -37,15 +39,14 @@ func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 	}
 	user.Password = string(Password)
 	user.Kelas = input.Kelas
+	user.NoHp = input.NoHp
 	user.Prodi = input.Prodi
 	user.Role = "user"
-	user.PT = input.PT
 
 	// Validasi nim di API
 	apiURL := fmt.Sprintf("https://api-frontend.kemdikbud.go.id/hit_mhs/%v", input.Nim)
 	resp, err := http.Get(apiURL)
 	if err != nil {
-		log.Println("Error calling API:", err)
 		return user, err
 	}
 	defer resp.Body.Close()
@@ -77,13 +78,44 @@ func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 	}
 
 	if len(apiResponse.Mahasiswa) <= 0 || apiResponse.Mahasiswa[0].WebsiteLink == "/data_mahasiswa/" {
-
 		return user, errors.New("Data nim tidak valid")
 	}
 
-	// Validasi nama PT
-	if !strings.Contains(apiResponse.Mahasiswa[0].Text, "UNIVERSITAS NEGERI MEDAN") {
+	var targetMahasiswa struct {
+		Text        string `json:"text"`
+		WebsiteLink string `json:"website-link"`
+	}
+
+	for _, mhs := range apiResponse.Mahasiswa {
+		if strings.Contains(mhs.Text, "UNIVERSITAS NEGERI MEDAN") {
+			targetMahasiswa = mhs
+			break
+		}
+	}
+
+	if targetMahasiswa.WebsiteLink == "" {
 		return user, errors.New("Daftar hanya tersedia untuk UNIVERSITAS NEGERI MEDAN")
+	}
+
+	ptInfo := strings.Split(targetMahasiswa.Text, ", PT : ")
+	if len(ptInfo) < 2 {
+		return user, errors.New("Invalid PT data from API")
+	}
+
+	pt := strings.TrimSpace(ptInfo[1])
+	prodiInfo := strings.Split(pt, ", Prodi: ")
+	if len(prodiInfo) < 2 {
+		return user, errors.New("Invalid Prodi data from API")
+	}
+
+	user.PT = strings.TrimPrefix(prodiInfo[0], "PT : ")
+
+	existingUser, err := s.repository.FindByNim(input.Nim)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return user, err
+	}
+	if existingUser.ID != 0 {
+		return user, errors.New("NIM sudah terdaftar")
 	}
 
 	newUser, err := s.repository.Save(user)
@@ -91,7 +123,6 @@ func (s *service) RegisterUser(input RegisterUserInput) (User, error) {
 		return newUser, err
 	}
 	return newUser, nil
-
 }
 
 func (s *service) GetAllUsers(input UserIDInput) ([]User, error) {
@@ -104,16 +135,36 @@ func (s *service) GetAllUsers(input UserIDInput) ([]User, error) {
 
 func (s *service) Login(input Login) (User, error) {
 	// mencari user berdasarkan Nim
-	user, err := s.repository.FindByNim(input.Nim)
+	nim := input.Nim
+	passwword := input.Password
+
+	user, err := s.repository.FindByNim(nim)
 	if err != nil {
 		return user, err
 	}
 
+	if user.ID == 0 {
+		return user, errors.New("No user found on that NIM")
+	}
 	// membandingkan password user dengan password input
-	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(passwword))
+	if err != nil {
 		return user, err
 	}
 
 	// jika semuanya baik-baik saja, kembalikan user
 	return user, nil
+}
+
+func (s *service) IsNimAvailable(input CheckNimInput) (bool, error) {
+	nim := input.Nim
+	user, err := s.repository.FindByNim(nim)
+	if err != nil {
+		return false, err
+	}
+
+	if user.ID == 0 {
+		return true, nil
+	}
+	return false, nil
 }

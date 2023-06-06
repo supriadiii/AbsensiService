@@ -12,4 +12,5 @@ type User struct {
 	NoHp     string
 	PT       string
 	Role     string
+	Token    string
 }

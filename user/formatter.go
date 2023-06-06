@@ -9,7 +9,6 @@ type UserFormatter struct {
 	Kelas     string    `json:"kelas"`
 	Prodi     string    `json:"prodi"`
 	NoHp      string    `json:"no_hp"`
-	Role      string    `json:"role"`
 	Token     string    `json:"token"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -36,7 +35,7 @@ func FormatUser(user User, token string) UserFormatter {
 		Kelas:     user.Kelas,
 		Prodi:     user.Prodi,
 		NoHp:      user.NoHp,
-		Role:      user.Role,
+		Token:     token,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}

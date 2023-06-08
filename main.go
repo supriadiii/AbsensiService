@@ -8,6 +8,7 @@ import (
 	"project_absensi/auth"
 	"project_absensi/handler"
 	"project_absensi/helper"
+	"project_absensi/rent"
 	"project_absensi/user"
 	"strings"
 
@@ -61,7 +62,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	err = db.AutoMigrate(&user.User{})
+	err = db.AutoMigrate(&user.User{}, &rent.Rent{}, &rent.RentImage{})
 	if err != nil {
 		log.Fatal("Error loading migrate database.")
 	}
@@ -72,10 +73,15 @@ func main() {
 
 	//REPOSITORY
 	userRepository := user.NewRepository(db)
+	RentRepository := rent.NewRepository(db)
 
 	//SERVICE
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
+	rentService := rent.NewService(RentRepository)
+
+	rents, _ := rentService.FindRents(1)
+	fmt.Println(len(rents))
 
 	//Handler
 	userHandler := handler.NewUserHandler(userService, authService)

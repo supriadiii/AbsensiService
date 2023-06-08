@@ -80,12 +80,9 @@ func main() {
 	authService := auth.NewService()
 	rentService := rent.NewService(RentRepository)
 
-	rents, _ := rentService.FindRents(1)
-	fmt.Println(len(rents))
-
 	//Handler
 	userHandler := handler.NewUserHandler(userService, authService)
-
+	rentHandler := handler.NewRentHandler(rentService)
 	router := gin.Default()
 	router.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -106,6 +103,9 @@ func main() {
 	api.POST("/user/login", userHandler.Login)
 	api.POST("/user/nim", userHandler.CheckNimAvailability)
 
+	//ENPOINT RENT
+	api.GET("/rents", rentHandler.GetRents)
+	api.POST("/create/rents", autMiddleware(authService, userService), rentHandler.CreateRent)
 	err = router.Run(":8080")
 	if err != nil {
 		log.Fatal("Failed to start the server!")

@@ -7,6 +7,7 @@ import (
 type Repository interface {
 	FindAll() ([]Rent, error)
 	FindByUserID(UserID uint) ([]Rent, error)
+	Save(Rent Rent) (Rent, error)
 }
 
 type repository struct {
@@ -19,7 +20,7 @@ func NewRepository(db *gorm.DB) *repository {
 
 func (r *repository) FindAll() ([]Rent, error) {
 	var Rent []Rent
-	err := r.db.Find(&Rent).Error
+	err := r.db.Preload("RentImage", "rent_image.is_primary=1").Find(&Rent).Error
 	if err != nil {
 		return Rent, err
 	}
@@ -33,4 +34,12 @@ func (r *repository) FindByUserID(UserID uint) ([]Rent, error) {
 		return rents, err
 	}
 	return rents, nil
+}
+
+func (r *repository) Save(Rent Rent) (Rent, error) {
+	err := r.db.Create(&Rent).Error
+	if err != nil {
+		return Rent, err
+	}
+	return Rent, nil
 }

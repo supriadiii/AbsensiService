@@ -20,6 +20,7 @@ func NewService(repository Repository) *service {
 }
 
 func (s *service) GetRents(userID uint) ([]Rent, error) {
+	var rent []Rent
 	if userID != 0 {
 		rent, err := s.repository.FindByUserID(userID)
 		if err != nil {

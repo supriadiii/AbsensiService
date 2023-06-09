@@ -1,10 +1,14 @@
 package rent
 
-import "project_absensi/common"
+import (
+	"project_absensi/common"
+	"project_absensi/user"
+)
 
 type Rent struct {
 	common.Model
 	UserID          uint
+	User            user.User `gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	Name            string
 	SortDescription string
 	Description     string

@@ -20,7 +20,7 @@ func NewRepository(db *gorm.DB) *repository {
 
 func (r *repository) FindAll() ([]Rent, error) {
 	var Rent []Rent
-	err := r.db.Preload("RentImage", "rent_image.is_primary=1").Find(&Rent).Error
+	err := r.db.Preload("User").Preload("RentImage", "rent_image.is_primary=1").Find(&Rent).Error
 	if err != nil {
 		return Rent, err
 	}
@@ -37,7 +37,7 @@ func (r *repository) FindByUserID(UserID uint) ([]Rent, error) {
 }
 
 func (r *repository) Save(Rent Rent) (Rent, error) {
-	err := r.db.Create(&Rent).Error
+	err := r.db.Create(&Rent).Preload("User").Error
 	if err != nil {
 		return Rent, err
 	}

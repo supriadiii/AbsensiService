@@ -9,6 +9,7 @@ import (
 type Service interface {
 	GetRents(userID uint) ([]Rent, error)
 	CreateRent(input CreateRentInput) (Rent, error)
+	SaveRentImage(input CreateRentImageInput, filelocation string) (RentImage, error)
 }
 
 type service struct {
@@ -53,4 +54,27 @@ func (s *service) CreateRent(input CreateRentInput) (Rent, error) {
 		return newRent, err
 	}
 	return newRent, nil
+}
+
+func (s *service) SaveRentImage(input CreateRentImageInput, filelocation string) (RentImage, error) {
+	isPrimary := 0
+	if input.IsPrimary {
+		isPrimary = 1
+		_, err := s.repository.MarkAllImagesAsNonPrimary(input.RentID)
+		if err != nil {
+			return RentImage{}, err
+		}
+
+	}
+
+	rentImage := RentImage{}
+	rentImage.RentID = input.RentID
+	rentImage.IsPrimary = isPrimary
+	rentImage.FileName = filelocation
+
+	newRentImage, err := s.repository.CreateImage(rentImage)
+	if err != nil {
+		return newRentImage, err
+	}
+	return newRentImage, nil
 }

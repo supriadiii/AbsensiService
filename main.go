@@ -106,6 +106,8 @@ func main() {
 	//ENPOINT RENT
 	api.GET("/rents", rentHandler.GetRents)
 	api.POST("/create/rents", autMiddleware(authService, userService), rentHandler.CreateRent)
+	api.POST("/image/create", autMiddleware(authService, userService), rentHandler.SaveRentImage)
+
 	err = router.Run(":8080")
 	if err != nil {
 		log.Fatal("Failed to start the server!")

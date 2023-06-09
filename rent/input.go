@@ -13,3 +13,8 @@ type CreateRentInput struct {
 	Quantity        int    `json:"quantity" binding:"required"`
 	User            user.User
 }
+
+type CreateRentImageInput struct {
+	RentID    uint `form:"id" binding:"required"`
+	IsPrimary bool `form:"is_primary"`
+}
